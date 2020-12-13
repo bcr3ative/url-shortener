@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style>
+        .starter-template {
+          padding: 3rem 1.5rem;
+          text-align: center;
+        }
+        footer {
+          padding-top: 3rem;
+          padding-bottom: 3rem;
+        }
+        footer p {
+          margin-bottom: .25rem;
+        }
+    </style>
+
+    <title>URL Shortener</title>
+  </head>
+  <body class="bg-light">
+    <main role="main" class="container">
+        <div class="starter-template">
+          <h1>URL Shortener</h1>
+        </div>
+    </main>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+              <h2>Invoke API</h2>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="token-addon">Token</span>
+                </div>
+                <input type="text" class="form-control" id="apitoken" aria-describedby="token-addon">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="endpoint-addon">Endpoint</span>
+                </div>
+                <input type="text" placeholder="https://localhost:5001/" class="form-control" id="endpoint" aria-describedby="endpoint-addon" value="https://localhost:5001/">
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <label class="input-group-text" for="httpmethod">HTTP Method</label>
+                </div>
+                <select class="custom-select" id="httpmethod">
+                  <option value="GET" selected>GET</option>
+                  <option value="POST">POST</option>
+                </select>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Payload</span>
+                </div>
+                <textarea class="form-control" aria-label="Payload" id="payload" rows="5"></textarea>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Notes</span>
+                </div>
+                <textarea class="form-control" aria-label="Notes" id="notes" placeholder="For people that love taking notes or copy/paste 🐱‍💻."></textarea>
+              </div>
+              <div class="input-group mb-3">
+                <button type="submit" class="btn btn-primary" id="callApiButton">Call API 🚀</button>
+              </div>
+            </div>
+            <div class="col">
+              <h2>Response</h2>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Status</span>
+                </div>
+                <textarea class="form-control" aria-label="Headers" rows="5" id="responseHeaders"></textarea>
+              </div>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Body</span>
+                </div>
+                <textarea class="form-control" aria-label="Body" rows="10" id="responseBody"></textarea>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <hr>
+        <div class="starter-template">
+          <h1>Step by step guide</h1>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <h2>1. Register a new account</h2>
+            <p>This action creates a new account in the database. With an account you can later authenticate with the api, register your url maps and check statistics.</p>
+            <p><u>Request properties:</u></p>
+            <p>
+              Endpoint: "/account"<br>
+              Method: "POST"
+            </p>
+            <p><u>Request payload:</u></p>
+            <pre><code>
+{
+  "AccountId": "myAccountId"
+}
+            </code></pre>
+            <p>The response body will return success, description and the generated password field if creation was successful.</p>
+            <p><a class="btn btn-success" role="button" id="loadTemplate1Button">Load template &raquo;</a></p>
+          </div>
+          <div class="col-md-4">
+            <h2>2. Authenticate with the api</h2>
+            <p>This action authenticates the user with the api using JWT. Generated token is valid for the next hour.</p>
+            <p><u>Request properties:</u></p>
+            <p>
+              Endpoint: "/account/login"<br>
+              Method: "POST"
+            </p>
+            <p><u>Request payload:</u></p>
+            <pre><code>
+{
+  "AccountId": "myAccountId",
+  "Password": "password"
+}
+            </code></pre>
+            <p>The response body will return AccountId field and the newly generated token which will be automatically inserted into the token input field.</p>
+            <p><a class="btn btn-success" role="button" id="loadTemplate2Button">Load template &raquo;</a></p>
+          </div>
+          <div class="col-md-4">
+            <h2>3. Register a new map</h2>
+            <span class="badge badge-danger">Token required</span>
+            <p>This action creates a new url map with the provided redirect type.</p>
+            <p><u>Request properties:</u></p>
+            <p>
+              Endpoint: "/register"<br>
+              Method: "POST"
+            </p>
+            <p><u>Request payload:</u></p>
+            <pre><code>
+{
+  "url": "https://jobs.smartrecruiters.com/Infobip/743999704152198-.net-software-engineer",
+  "redirectType": 302
+}
+            </code></pre>
+            <p>The response body will return shortUrl field with the link to the shortened url if creation was successful.</p>
+            <p><a class="btn btn-success" role="button" id="loadTemplate3Button">Load template &raquo;</a></p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <h2>4. Redirect</h2>
+            <p>After the creation of the short url we can visit that url and see that is being redirect to the origin.</p>
+            <p><u>Request properties:</u></p>
+            <p>
+              Endpoint: "/{shortUrl}"<br>
+              Method: "GET"
+            </p>
+            <p>Visit count is updated when redirect the short url is redirected to the origin.</p>
+            <p><a class="btn btn-secondary" role="button">No template</a></p>
+          </div>
+          <div class="col-md-4">
+            <h2>5. Fetch visit statistics</h2>
+            <span class="badge badge-danger">Token required</span>
+            <p>This action fetches the visit count of url maps per AccountId.</p>
+            <p><u>Request properties:</u></p>
+            <p>
+              Endpoint: "/statistic/{AccountId}"<br>
+              Method: "GET"
+            </p>
+            <p>The response body will return a dictionary of url and visit count pairs.</p>
+            <p><a class="btn btn-success" role="button" id="loadTemplate5Button">Load template &raquo;</a></p>
+          </div>
+          <div class="col-md-4">
+          </div>
+        </div>
+      </div>
+
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; 2020 Paolo Perkovic</p>
+        <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://github.com/bcr3ative" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        </ul>
+      </footer>
+
+    <script src="js/index.js"></script>
+  </body>
+</html>
