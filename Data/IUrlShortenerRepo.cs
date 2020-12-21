@@ -1,19 +1,20 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UrlShortener.Models;
 
 namespace UrlShortener.Data
 {
     public interface IUrlShortenerRepo
     {
-        bool SaveChanges();
+        Task<bool> SaveChanges();
 
-        void CreateAccount(Account acc);
-        void CreateMap(UrlMap map);
-        IReadOnlyCollection<UrlMap> GetStatisticsByAccountId(string userName);
-        UrlMap GetRedirectRule(string shortUrl);
-        Account GetAccount(string userName, string password);
-        bool AccountExists(string userName);
-        bool UrlMapExists(int accountId, string url);
-        bool ShortUrlExists(string shorUrl);
+        Task CreateAccount(Account acc);
+        Task CreateMap(UrlMap map);
+        Task<IList<UrlMap>> GetStatisticsByAccountId(string userName);
+        Task<UrlMap> GetRedirectRule(string shortUrl);
+        Task<Account> GetAccount(string userName, string password);
+        Task<bool> AccountExists(string userName);
+        Task<bool> UrlMapExists(int accountId, string url);
+        Task<bool> ShortUrlExists(string shorUrl);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UrlShortener.Data;
@@ -25,7 +26,7 @@ namespace UrlShortener.Controllers
 
         [HttpPost("account")]
         [AllowAnonymous]
-        public ActionResult<AccountCreateDto> CreateAccount(AccountCreateDto accountCreateDto)
+        public async Task<ActionResult<AccountCreateDto>> CreateAccount(AccountCreateDto accountCreateDto)
         {
             string genPassword = KeyGenerator.GetUniqueKey(8);
 
@@ -37,7 +38,7 @@ namespace UrlShortener.Controllers
             };
 
             // Check if account already exists
-            if (_repository.AccountExists(accountCreateDto.AccountId))
+            if (await _repository.AccountExists(accountCreateDto.AccountId))
             {
                 response.success = "false";
                 response.description = "Account with the same name already exists.";
@@ -53,8 +54,8 @@ namespace UrlShortener.Controllers
 
             try
             {
-                _repository.CreateAccount(acc);
-                _repository.SaveChanges();
+                await _repository.CreateAccount(acc);
+                await _repository.SaveChanges();
             }
             catch (System.Exception)
             {
@@ -71,9 +72,9 @@ namespace UrlShortener.Controllers
 
         [HttpPost("account/login")]
         [AllowAnonymous]
-        public ActionResult<Object> Authenticate([FromBody] AccountLoginRequestDto requestAcc)
+        public async Task<ActionResult<Object>> Authenticate([FromBody] AccountLoginRequestDto requestAcc)
         {
-            var acc = _repository.GetAccount(requestAcc.AccountId, requestAcc.Password);
+            var acc = await _repository.GetAccount(requestAcc.AccountId, requestAcc.Password);
 
             if (acc == null)
             {
@@ -92,7 +93,7 @@ namespace UrlShortener.Controllers
         // Register
 
         [HttpPost("register")]
-        public ActionResult<UrlMapReadDto> CreateUrlMap(UrlMapCreateDto urlMapCreateDto)
+        public async Task<ActionResult<UrlMapReadDto>> CreateUrlMap(UrlMapCreateDto urlMapCreateDto)
         {
             // Extract Id from JWT token
             var accountId = Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value);
@@ -108,13 +109,13 @@ namespace UrlShortener.Controllers
             }
 
             // Check if the same map already exists in the database
-            if (_repository.UrlMapExists(accountId, urlMapCreateDto.url))
+            if (await _repository.UrlMapExists(accountId, urlMapCreateDto.url))
             {
                 return Conflict(new {message = "Url map with the same configuration already exists."});
             }
 
             // If there is a conflick on short url return 500
-            if (_repository.ShortUrlExists(shortUrlGen))
+            if (await _repository.ShortUrlExists(shortUrlGen))
             {
                 return StatusCode(500, new {message = "Short url with the same generated name already exists. Please try again."});
             }
@@ -134,8 +135,8 @@ namespace UrlShortener.Controllers
 
             try
             {
-                _repository.CreateMap(map);
-                _repository.SaveChanges();
+                await _repository.CreateMap(map);
+                await _repository.SaveChanges();
             }
             catch (System.Exception)
             {
@@ -148,9 +149,9 @@ namespace UrlShortener.Controllers
         // Statistic
 
         [HttpGet("statistic/{userName}")]
-        public ActionResult<Object> GetStatisticsByAccountId(string userName)
+        public async Task<ActionResult<Object>> GetStatisticsByAccountId(string userName)
         {
-            var statistics = _repository.GetStatisticsByAccountId(userName);
+            var statistics = await _repository.GetStatisticsByAccountId(userName);
             if (statistics.Count != 0)
             {
                 var response = new Dictionary<string, int>();
@@ -169,13 +170,13 @@ namespace UrlShortener.Controllers
 
         [HttpGet("{shortUrl}")]
         [AllowAnonymous]
-        public ActionResult RedirectUrl(string shortUrl)
+        public async Task<ActionResult> RedirectUrl(string shortUrl)
         {
-            var redirectRule = _repository.GetRedirectRule(shortUrl);
+            var redirectRule = await _repository.GetRedirectRule(shortUrl);
             if (redirectRule != null)
             {
                 redirectRule.TimesVisited += 1;
-                _repository.SaveChanges();
+                await _repository.SaveChanges();
                 if (redirectRule.RedirectType == 301)
                 {
                     return RedirectPermanent(redirectRule.Url);

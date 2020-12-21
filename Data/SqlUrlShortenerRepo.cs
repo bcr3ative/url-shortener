@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using UrlShortener.Models;
 using UrlShortener.Utils;
 
@@ -15,49 +17,47 @@ namespace UrlShortener.Data
             _context = context;
         }
 
-        public void CreateAccount(Account acc)
+        public async Task<bool> SaveChanges()
+        {
+            return (await _context.SaveChangesAsync() >= 0);
+        }
+
+        public async Task CreateAccount(Account acc)
         {
             if (acc == null)
             {
                 throw new ArgumentNullException(nameof(acc));
             }
 
-            _context.Accounts.Add(acc);
+            await _context.Accounts.AddAsync(acc);
         }
 
-        public void CreateMap(UrlMap map)
+        public async Task CreateMap(UrlMap map)
         {
             if (map == null)
             {
                 throw new ArgumentNullException(nameof(map));
             }
 
-            _context.UrlMaps.Add(map);
+            await _context.UrlMaps.AddAsync(map);
         }
 
-        public IReadOnlyCollection<UrlMap> GetStatisticsByAccountId(string userName)
+        public async Task<IList<UrlMap>> GetStatisticsByAccountId(string userName)
         {
-            // Fetch a read only list of maps based on username
-            return _context.UrlMaps.Where(map => map.Account.UserName == userName)
-                .ToList()
-                .AsReadOnly();
+            return await _context.UrlMaps.Where(map => map.Account.UserName == userName)
+                .ToListAsync();
         }
 
-        public UrlMap GetRedirectRule(string shortUrl)
+        public async Task<UrlMap> GetRedirectRule(string shortUrl)
         {
             // Fetch the url map based on the short url
-            return _context.UrlMaps.FirstOrDefault(map => map.ShortUrl == shortUrl);
+            return await _context.UrlMaps.FirstOrDefaultAsync(map => map.ShortUrl == shortUrl);
         }
 
-        public bool SaveChanges()
-        {
-            return (_context.SaveChanges() >= 0);
-        }
-
-        public Account GetAccount(string userName, string password)
+        public async Task<Account> GetAccount(string userName, string password)
         {
             // Fetch account based on username which has a unique index
-            var acc = _context.Accounts.FirstOrDefault(a => a.UserName == userName);
+            var acc = await _context.Accounts.FirstOrDefaultAsync(a => a.UserName == userName);
 
             // Return null if no account or unable to verify the user
             if (acc == null || !SecurePasswordHasher.Verify(password, acc.Password)) return null;
@@ -65,27 +65,27 @@ namespace UrlShortener.Data
             return acc;
         }
 
-        public bool AccountExists(string userName)
+        public async Task<bool> AccountExists(string userName)
         {
-            var acc = _context.Accounts.FirstOrDefault(a => a.UserName == userName);
+            var acc = await _context.Accounts.FirstOrDefaultAsync(a => a.UserName == userName);
 
             if (acc == null) return false;
 
             return true;
         }
 
-        public bool UrlMapExists(int accountId, string url)
+        public async Task<bool> UrlMapExists(int accountId, string url)
         {
-            var map = _context.UrlMaps.FirstOrDefault(m => m.AccountId == accountId && m.Url == url);
+            var map = await _context.UrlMaps.FirstOrDefaultAsync(m => m.AccountId == accountId && m.Url == url);
 
             if (map == null) return false;
 
             return true;
         }
 
-        public bool ShortUrlExists(string shorUrl)
+        public async Task<bool> ShortUrlExists(string shorUrl)
         {
-            var map = _context.UrlMaps.FirstOrDefault(m => m.ShortUrl == shorUrl);
+            var map = await _context.UrlMaps.FirstOrDefaultAsync(m => m.ShortUrl == shorUrl);
 
             if (map == null) return false;
 
