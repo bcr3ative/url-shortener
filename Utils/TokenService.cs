@@ -11,6 +11,7 @@ namespace UrlShortener.Utils
     public static class TokenService
     {
         // Random generated private key/secret
+        // Must be changed before publishing
         public static string PRIVATE_KEY = "24U+?p?9cbW%%kPDe@3b%zzD+qYW7R#6b4uHj5Yy";
 
         // Expire date for token is 1 hour
