@@ -5,6 +5,7 @@ using System.Text;
 namespace UrlShortener.Utils
 {
     // Key generator class for generating passwords and short urls
+    // https://stackoverflow.com/a/1344255
     public class KeyGenerator
     {
         // Array of all possible characters
@@ -38,6 +39,7 @@ namespace UrlShortener.Utils
     }
 
     // Password hasher class used for storing passwords in the database
+    // https://stackoverflow.com/a/10402129
     public static class SecurePasswordHasher
     {
         // Size of salt
