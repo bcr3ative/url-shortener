@@ -11,39 +11,19 @@ using UrlShortener.Utils;
 namespace UrlShortener.Controllers
 {
     [ApiController]
-    [Route("account")]
     [Authorize]
-    public class AccountController : ControllerBase
+    public class UrlShortenerController : ControllerBase
     {
         private readonly IUrlShortenerRepo _repository;
 
-        public AccountController(IUrlShortenerRepo repository)
+        public UrlShortenerController(IUrlShortenerRepo repository)
         {
             _repository = repository;
         }
 
-        [HttpPost]
-        [Route("login")]
-        [AllowAnonymous]
-        public ActionResult<Object> Authenticate([FromBody] AccountLoginRequestDto requestAcc)
-        {
-            var acc = _repository.GetAccount(requestAcc.AccountId, requestAcc.Password);
+        // Account
 
-            if (acc == null)
-            {
-                return NotFound(new {message = "User or password is invalid."});
-            }
-
-            var token = TokenService.CreateToken(acc);
-
-            return Ok(new
-            {
-                AccountId = acc.UserName,
-                Token = token
-            });
-        }
-
-        [HttpPost]
+        [HttpPost("account")]
         [AllowAnonymous]
         public ActionResult<AccountCreateDto> CreateAccount(AccountCreateDto accountCreateDto)
         {
@@ -88,21 +68,30 @@ namespace UrlShortener.Controllers
 
             return Ok(response);
         }
-    }
 
-    [ApiController]
-    [Route("register")]
-    [Authorize]
-    public class RegisterController : ControllerBase
-    {
-        private readonly IUrlShortenerRepo _repository;
-
-        public RegisterController(IUrlShortenerRepo repository)
+        [HttpPost("account/login")]
+        [AllowAnonymous]
+        public ActionResult<Object> Authenticate([FromBody] AccountLoginRequestDto requestAcc)
         {
-            _repository = repository;
+            var acc = _repository.GetAccount(requestAcc.AccountId, requestAcc.Password);
+
+            if (acc == null)
+            {
+                return NotFound(new {message = "User or password is invalid."});
+            }
+
+            var token = TokenService.CreateToken(acc);
+
+            return Ok(new
+            {
+                AccountId = acc.UserName,
+                Token = token
+            });
         }
 
-        [HttpPost]
+        // Register
+
+        [HttpPost("register")]
         public ActionResult<UrlMapReadDto> CreateUrlMap(UrlMapCreateDto urlMapCreateDto)
         {
             // Extract Id from JWT token
@@ -155,21 +144,10 @@ namespace UrlShortener.Controllers
 
             return Ok(response);
         }
-    }
 
-    [ApiController]
-    [Route("statistic")]
-    [Authorize]
-    public class StatisticController : ControllerBase
-    {
-        private readonly IUrlShortenerRepo _repository;
+        // Statistic
 
-        public StatisticController(IUrlShortenerRepo repository)
-        {
-            _repository = repository;
-        }
-
-        [HttpGet("{userName}")]
+        [HttpGet("statistic/{userName}")]
         public ActionResult<Object> GetStatisticsByAccountId(string userName)
         {
             var statistics = _repository.GetStatisticsByAccountId(userName);
@@ -186,20 +164,11 @@ namespace UrlShortener.Controllers
 
             return NotFound();
         }
-    }
 
-    [ApiController]
-    [Route("")]
-    public class RedirectController : ControllerBase
-    {
-        private readonly IUrlShortenerRepo _repository;
-
-        public RedirectController(IUrlShortenerRepo repository)
-        {
-            _repository = repository;
-        }
+        // Redirect
 
         [HttpGet("{shortUrl}")]
+        [AllowAnonymous]
         public ActionResult RedirectUrl(string shortUrl)
         {
             var redirectRule = _repository.GetRedirectRule(shortUrl);
